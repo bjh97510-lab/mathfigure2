@@ -1096,13 +1096,12 @@ const UNITS = {
       <p>평면도형을 한 직선(<b>회전축</b>)을 축으로 1회전 시킬 때 생기는 입체도형: 원기둥, 원뿔, 원뿔대, 구.</p>
       <ul><li>회전축에 <b>수직인</b> 평면으로 자른 단면은 항상 <b>원</b></li>
       <li>회전축을 <b>포함하는</b> 평면으로 자른 단면은 회전축에 대하여 <b>선대칭</b>이고 모두 합동</li>
-      <li>구는 어느 방향으로 잘라도 단면이 <b>원</b>!</li></ul>
-      <div class="formula">$$(\text{꼭짓점}) - (\text{모서리}) + (\text{면}) = 2 \quad (\text{오일러 공식})$$</div>`,
+      <li>구는 어느 방향으로 잘라도 단면이 <b>원</b>!</li></ul>`,
     quiz: [
       { id: 'vw1', tag: '정다면체', type: 'input', q: R`정다면체의 종류는 모두 몇 가지일까?`, suffix: '가지', answer: 5,
         hint: R`3D 뷰어의 '정다면체' 그룹에 있는 도형의 수를 세어 봐!`, explain: R`정사면체, 정육면체, 정팔면체, 정십이면체, 정이십면체 — <b>5가지</b>뿐이야.` },
       { id: 'vw2', tag: '정다면체', type: 'input', q: R`정팔면체의 모서리는 모두 몇 개일까?`, suffix: '개', answer: 12,
-        hint: R`정삼각형 8개의 변은 $8\times3=24$개. 모서리 하나에 면이 2개씩 만나니까…`, explain: R`$\dfrac{8\times 3}{2} = 12$(개). 오일러 공식 $6 - 12 + 8 = 2$ 도 확인!` },
+        hint: R`정삼각형 8개의 변은 $8\times3=24$개. 모서리 하나에 면이 2개씩 만나니까…`, explain: R`$\dfrac{8\times 3}{2} = 12$(개)` },
       { id: 'vw3', tag: '각기둥', type: 'input', q: R`오각기둥의 모서리는 모두 몇 개일까?`, suffix: '개', answer: 15,
         hint: R`n각기둥의 모서리는 $3n$개야. (위 밑면 $n$ + 아래 밑면 $n$ + 옆 모서리 $n$)`, explain: R`$3 \times 5 = 15$(개)` },
       { id: 'vw4', tag: '회전체의 단면', type: 'choice', q: R`원뿔을 <b>회전축을 포함하는 평면</b>으로 자를 때 생기는 단면의 모양은?`,
@@ -1252,7 +1251,7 @@ const CONCEPT_CHECK = {
       { f: '육각뿔의 꼭짓점의 개수', b: R`$n+1 = 7$(개)` },
       { f: '정팔면체의 한 면의 모양', b: R`<b>정삼각형</b>` },
       { f: '직각삼각형을 직각을 낀 한 변을 축으로 1회전', b: R`<b>원뿔</b>` },
-      { f: '꼭짓점 8개, 모서리 12개인 다면체의 면의 개수', b: R`$8 - 12 + F = 2$<br/>$F = 6$(개)` },
+      { f: '칠각기둥의 모서리의 개수', b: R`$3 \times 7 = 21$(개)` },
     ],
   },
   net: {
@@ -1816,7 +1815,6 @@ function simViewer(host) {
     if (cur.poly) {
       const [f, e, v] = cur.poly;
       tiles.push(tile('면 · 모서리 · 꼭짓점', `면 <b>${f}</b>개 · 모서리 <b>${e}</b>개 · 꼭짓점 <b>${v}</b>개`));
-      tiles.push(tile('오일러 공식 확인', tex(R`v - e + f = ${v} - ${e} + ${f} = ${v - e + f}`)));
       tiles.push(tile('면의 모양', cur.face));
       if (cur.meet) tiles.push(tile('한 꼭짓점에 모인 면', `${cur.meet}개`));
     }
