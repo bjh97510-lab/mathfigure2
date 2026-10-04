@@ -194,6 +194,28 @@
   .concept li::before { content: '🍃'; margin-left: -1.2rem; margin-right: .3rem; font-size: .8em; }
   .concept .formula { background: #fffdf6; border: 1.5px dashed #c9a46b; border-radius: 12px; padding: .5rem .8rem; margin: .5rem 0; overflow-x: auto; }
 
+  /* ---------- 개념 확인: OX 퀴즈 + 뒤집기 카드 ---------- */
+  .check-box { margin-top: 1.4rem; padding-top: 1.1rem; border-top: 2px dashed rgba(139,94,52,.3); }
+  .ox-item { background: #fffdf6; border: 1.5px solid rgba(139,94,52,.25); border-radius: 14px; padding: .7rem .8rem; margin-top: .6rem; }
+  .ox-item .ox-q { line-height: 1.6; }
+  .ox-btns { display: flex; gap: .5rem; margin-top: .5rem; }
+  .ox-btns button { flex: 1; padding: .35rem 0; border-radius: 12px; font-family: 'Jua', sans-serif; font-size: 1.3rem; border: 2px solid rgba(139,94,52,.3); background: #fff; transition: transform .1s; }
+  .ox-btns button:not(:disabled):hover { transform: translateY(-2px); }
+  .ox-btns button[data-ox="o"] { color: #2f6b8f; }
+  .ox-btns button[data-ox="x"] { color: #c4553f; }
+  .ox-btns button.right { border-color: #3f7d4e; background: #e6f4e5; }
+  .ox-btns button.wrong { border-color: #c4553f; background: #fbe6df; animation: shake .4s; }
+  .ox-item .ox-fb { margin-top: .45rem; font-size: .93rem; line-height: 1.6; }
+  .flip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; margin-top: .6rem; }
+  .flip-card { display: block; width: 100%; perspective: 800px; min-height: 136px; cursor: pointer; background: none; border: 0; padding: 0; text-align: center; }
+  .flip-card .inner { position: relative; width: 100%; height: 100%; min-height: 136px; transition: transform .5s; transform-style: preserve-3d; }
+  .flip-card.on .inner { transform: rotateY(180deg); }
+  .flip-card .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: .6rem; line-height: 1.5; font-size: .93rem; }
+  .flip-card .front { background: linear-gradient(160deg, #fff7dc, #fde49e); border: 2px solid #e3b54a; font-family: 'Jua', sans-serif; font-size: .95rem; color: var(--ink); overflow: auto; }
+  .flip-card .front small { font-family: inherit; font-size: .72rem; opacity: .6; margin-top: .3rem; }
+  .flip-card .back { background: linear-gradient(160deg, #eaf7f1, #d6eee2); border: 2px solid #5b9e7e; transform: rotateY(180deg); overflow: auto; }
+  @media (prefers-reduced-motion: reduce) { .flip-card .inner { transition: none; } }
+
   /* ---------- 카드 (로비/메뉴) ---------- */
   .forest-card { transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; text-align: left; }
   .forest-card:hover { transform: translateY(-4px) rotate(-.3deg); }
@@ -749,11 +771,13 @@ SCREENS.concept = (app, id) => {
         <div class="relative flex items-center gap-2 mb-4 font-title text-lg text-wood-700"><i data-lucide="book-open" class="w-5 h-5"></i>개념 마법서</div>
         <div class="relative flex items-start gap-3 mb-4"><img src="c1.png" alt="" class="mascot-ring w-12 h-12 shrink-0" /><div class="speech text-[15px]">${u.tip}</div></div>
         <div class="relative">${mathify(u.concept)}</div>
+        ${conceptCheckHTML(id)}
         <button class="btn-wood leaf w-full mt-5 relative" data-go="quiz:${id}">개념을 익혔다면 퀴즈 풀러 가기 <i data-lucide="swords" class="w-4 h-4"></i></button>
       </section>
     </div>
   </div>`;
   bindGo(app);
+  bindConceptCheck(app, id);
   let simCleanup = null;
   try { simCleanup = u.sim($('#sim')); } catch (e) {
     console.error(e);
@@ -1186,6 +1210,153 @@ const CONCEPT_DESC = {
   volume: '구멍 뚫린 도형·수조 실험<br/>기둥·뿔·구의 부피',
 };
 Object.entries(CONCEPT_DESC).forEach(([id, d]) => { UNITS[id].conceptDesc = d; });
+
+/* ---------- 개념 정리의 개념 확인: OX 퀴즈(ox) + 뒤집기 카드(cards) ---------- */
+const CONCEPT_CHECK = {
+  polygon: {
+    ox: [
+      { q: R`오각형의 내각의 크기의 합은 $540^\circ$이다.`, a: true, why: R`$180^\circ \times (5-2) = 540^\circ$` },
+      { q: R`변의 개수가 많을수록 외각의 크기의 합도 커진다.`, a: false, why: R`외각의 합은 변의 개수와 관계없이 <b>항상 $360^\circ$</b>야.` },
+      { q: R`육각형의 한 꼭짓점에서 그을 수 있는 대각선은 $3$개이다.`, a: true, why: R`$n-3 = 6-3 = 3$(개)` },
+      { q: R`정다각형의 한 내각과 한 외각의 크기의 합은 $180^\circ$이다.`, a: true, why: R`한 꼭짓점에서 (내각) + (외각) $= 180^\circ$야.` },
+    ],
+    cards: [
+      { f: '십각형의 내각의 합', b: R`$180^\circ \times 8 = 1440^\circ$` },
+      { f: '정오각형의 한 외각', b: R`$\dfrac{360^\circ}{5} = 72^\circ$` },
+      { f: '오각형의 대각선의 개수', b: R`$\dfrac{5 \times 2}{2} = 5$(개)` },
+      { f: '정육각형의 한 내각', b: R`$\dfrac{720^\circ}{6} = 120^\circ$` },
+    ],
+  },
+  circle: {
+    ox: [
+      { q: R`원에서 가장 긴 현은 지름이다.`, a: true, why: R`원의 중심을 지나는 현이 지름이고, 가장 길어.` },
+      { q: R`부채꼴의 넓이는 중심각의 크기에 정비례한다.`, a: true, why: R`$S = \pi r^2 \times \dfrac{x}{360}$ 이므로 중심각에 정비례해.` },
+      { q: R`활꼴은 두 반지름과 호로 이루어진 도형이다.`, a: false, why: R`그건 <b>부채꼴</b>이야. 활꼴은 <b>호와 현</b>으로 이루어진 도형!` },
+      { q: R`현의 길이는 중심각의 크기에 정비례한다.`, a: false, why: R`호의 길이와 넓이는 정비례하지만, <b>현의 길이는 정비례하지 않아</b>.` },
+    ],
+    cards: [
+      { f: '반지름이 3인 원의 둘레', b: R`$2\pi \times 3 = 6\pi$` },
+      { f: '반지름 6, 중심각 60°인 부채꼴의 호의 길이', b: R`$12\pi \times \dfrac{60}{360} = 2\pi$` },
+      { f: '반지름 4, 호의 길이 3π인 부채꼴의 넓이', b: R`$\dfrac{1}{2} \times 4 \times 3\pi = 6\pi$` },
+      { f: '반지름 2인 원의 넓이', b: R`$\pi \times 2^2 = 4\pi$` },
+    ],
+  },
+  viewer: {
+    ox: [
+      { q: R`정다면체는 모두 5가지뿐이다.`, a: true, why: R`정사면체, 정육면체, 정팔면체, 정십이면체, 정이십면체!` },
+      { q: R`오각기둥의 모서리는 $10$개이다.`, a: false, why: R`n각기둥의 모서리는 $3n$개 → $3 \times 5 = 15$(개)` },
+      { q: R`원뿔을 회전축에 수직인 평면으로 자르면 단면은 원이다.`, a: true, why: R`회전체를 회전축에 수직으로 자른 단면은 항상 <b>원</b>이야.` },
+      { q: R`원기둥을 회전축을 포함하는 평면으로 자르면 단면은 원이다.`, a: false, why: R`회전축을 포함하도록 자르면 단면은 <b>직사각형</b>이야.` },
+    ],
+    cards: [
+      { f: '육각뿔의 꼭짓점의 개수', b: R`$n+1 = 7$(개)` },
+      { f: '정팔면체의 한 면의 모양', b: R`<b>정삼각형</b>` },
+      { f: '직각삼각형을 직각을 낀 한 변을 축으로 1회전', b: R`<b>원뿔</b>` },
+      { f: '꼭짓점 8개, 모서리 12개인 다면체의 면의 개수', b: R`$8 - 12 + F = 2$<br/>$F = 6$(개)` },
+    ],
+  },
+  net: {
+    ox: [
+      { q: R`원기둥의 전개도에서 옆면은 직사각형이다.`, a: true, why: R`옆면을 펼치면 가로가 밑면의 둘레 $2\pi r$인 직사각형이야.` },
+      { q: R`원뿔의 전개도에서 옆면은 삼각형이다.`, a: false, why: R`원뿔의 옆면은 <b>부채꼴</b>이야.` },
+      { q: R`정육면체의 전개도는 서로 다른 모양이 $11$가지이다.`, a: true, why: R`정사각형 6개를 붙이는 방법 중 접어서 정육면체가 되는 건 11가지야.` },
+      { q: R`원기둥의 전개도에서 옆면의 가로의 길이는 밑면의 반지름과 같다.`, a: false, why: R`옆면의 가로는 <b>밑면의 둘레</b> $2\pi r$과 같아.` },
+    ],
+    cards: [
+      { f: '사각뿔의 전개도에서 옆면', b: R`<b>삼각형 4개</b>` },
+      { f: '밑면의 반지름이 3인 원기둥의 옆면의 가로', b: R`$2\pi \times 3 = 6\pi$` },
+      { f: '반지름 2, 모선 6인 원뿔의 옆면(부채꼴)의 중심각', b: R`$360^\circ \times \dfrac{2}{6} = 120^\circ$` },
+      { f: '오각기둥의 전개도의 면의 개수', b: R`밑면 2 + 옆면 5<br/>$= 7$(개)` },
+    ],
+  },
+  surface: {
+    ox: [
+      { q: R`기둥의 겉넓이는 (밑넓이) $\times 2$ + (옆넓이)이다.`, a: true, why: R`기둥은 밑면이 <b>2개</b>야.` },
+      { q: R`뿔의 겉넓이는 (밑넓이) $\times 2$ + (옆넓이)이다.`, a: false, why: R`뿔은 밑면이 <b>1개</b>라서 (밑넓이) + (옆넓이)야.` },
+      { q: R`각기둥의 옆면을 펼치면 가로가 밑면의 둘레, 세로가 높이인 직사각형이 된다.`, a: true, why: R`그래서 (옆넓이) = (밑면의 둘레) $\times$ (높이)!` },
+      { q: R`원뿔의 옆넓이는 $\pi r^2$이다.`, a: false, why: R`원뿔의 옆넓이는 $\pi r l$ ($l$은 모선)이야. $\pi r^2$은 밑넓이!` },
+    ],
+    cards: [
+      { f: '한 모서리가 2인 정육면체의 겉넓이', b: R`$2 \times 2 \times 6 = 24$` },
+      { f: '반지름 1, 높이 3인 원기둥의 옆넓이', b: R`$2\pi \times 1 \times 3 = 6\pi$` },
+      { f: '반지름 3, 모선 5인 원뿔의 옆넓이', b: R`$\pi \times 3 \times 5 = 15\pi$` },
+      { f: '반지름 2, 높이 5인 원기둥의 겉넓이', b: R`$8\pi + 20\pi = 28\pi$` },
+    ],
+  },
+  volume: {
+    ox: [
+      { q: R`기둥의 부피는 (밑넓이) $\times$ (높이)이다.`, a: true, why: R`밑면을 높이만큼 쌓았다고 생각하면 돼.` },
+      { q: R`뿔의 부피는 밑넓이와 높이가 같은 기둥의 부피의 $\dfrac{1}{2}$이다.`, a: false, why: R`뿔의 부피는 기둥의 부피의 $\dfrac{1}{3}$이야.` },
+      { q: R`반지름이 $r$인 구의 부피는 $\dfrac{4}{3}\pi r^3$이다.`, a: true, why: R`$V = \dfrac{4}{3}\pi r^3$` },
+      { q: R`물에 완전히 잠긴 돌의 부피는 늘어난 물의 부피와 같다.`, a: true, why: R`아르키메데스의 원리야!` },
+    ],
+    cards: [
+      { f: '밑넓이 12, 높이 5인 기둥의 부피', b: R`$12 \times 5 = 60$` },
+      { f: '밑넓이 12, 높이 5인 뿔의 부피', b: R`$\dfrac{1}{3} \times 12 \times 5 = 20$` },
+      { f: '반지름이 3인 구의 부피', b: R`$\dfrac{4}{3}\pi \times 27 = 36\pi$` },
+      { f: '밑넓이 50 cm²인 수조에 돌을 넣었더니 물이 2 cm 올라갔다. 돌의 부피는?', b: R`$50 \times 2 = 100\ (\text{cm}^3)$` },
+    ],
+  },
+};
+function conceptCheckHTML(id) {
+  const c = CONCEPT_CHECK[id];
+  if (!c) return '';
+  return `
+    <div class="check-box relative">
+      <h3>⭕❌ OX 퀴즈 <span id="ox-score" class="text-sm opacity-70 font-normal"></span></h3>
+      ${c.ox.map((o, i) => `
+        <div class="ox-item" data-ox-item="${i}">
+          <div class="ox-q"><b>Q${i + 1}.</b> ${mathify(o.q)}</div>
+          <div class="ox-btns"><button data-ox="o" aria-label="O">O</button><button data-ox="x" aria-label="X">X</button></div>
+          <div class="ox-fb" hidden></div>
+        </div>`).join('')}
+      <h3 class="mt-5">🃏 카드 뒤집기 <span class="text-sm opacity-70 font-normal">답을 떠올린 뒤 눌러 봐!</span></h3>
+      <div class="flip-grid">
+        ${c.cards.map((k) => `
+          <button class="flip-card" aria-pressed="false">
+            <div class="inner">
+              <div class="face front">${mathify(k.f)}<small>눌러서 뒤집기</small></div>
+              <div class="face back">${mathify(k.b)}</div>
+            </div>
+          </button>`).join('')}
+      </div>
+      <button class="btn-ghost w-full mt-3" id="check-reset"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>개념 확인 다시 하기</button>
+    </div>`;
+}
+function bindConceptCheck(root, id) {
+  const c = CONCEPT_CHECK[id];
+  if (!c) return;
+  let done = 0, right = 0;
+  const score = () => { $('#ox-score', root).textContent = done ? `${right}/${c.ox.length} 맞힘` : ''; };
+  $$('[data-ox-item]', root).forEach((item) => {
+    const o = c.ox[Number(item.dataset.oxItem)];
+    $$('[data-ox]', item).forEach((btn) => btn.addEventListener('click', () => {
+      const pick = btn.dataset.ox === 'o', ok = pick === o.a;
+      $$('[data-ox]', item).forEach((b) => { b.disabled = true; });
+      btn.classList.add(ok ? 'right' : 'wrong');
+      if (!ok) $(`[data-ox="${o.a ? 'o' : 'x'}"]`, item).classList.add('right');
+      const fb = $('.ox-fb', item);
+      fb.innerHTML = `${ok ? '🎉 <b class="text-[#3f7d4e]">정답!</b>' : `🍂 <b class="text-[#c4553f]">아쉬워! 정답은 ${o.a ? 'O' : 'X'}</b>`} ${mathify(o.why)}`;
+      fb.hidden = false;
+      done++; if (ok) right++;
+      score();
+      if (ok) { const r = btn.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, ['✨', '⭐', '🍃'], 8); }
+      if (done === c.ox.length) toast(right === done ? '🌟 OX 퀴즈 모두 정답! 개념 완벽해!' : `OX 퀴즈 ${right}/${done} 맞혔어. 틀린 문제의 설명을 다시 읽어 봐!`);
+    }));
+  });
+  $$('.flip-card', root).forEach((card) => card.addEventListener('click', () => {
+    card.classList.toggle('on');
+    card.setAttribute('aria-pressed', card.classList.contains('on'));
+  }));
+  $('#check-reset', root).addEventListener('click', () => {
+    done = 0; right = 0; score();
+    $$('[data-ox-item]', root).forEach((item) => {
+      $$('[data-ox]', item).forEach((b) => { b.disabled = false; b.classList.remove('right', 'wrong'); });
+      const fb = $('.ox-fb', item); fb.hidden = true; fb.innerHTML = '';
+    });
+    $$('.flip-card', root).forEach((card) => { card.classList.remove('on'); card.setAttribute('aria-pressed', 'false'); });
+  });
+}
 
 /* ---------- 단계별 힌트 1단계: 사용할 개념 안내 ---------- */
 const CONCEPT_HINTS = {
