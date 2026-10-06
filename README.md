@@ -6,30 +6,18 @@
 | 파일 | 설명 |
 |---|---|
 | `index.html` | 웹앱 전체 (HTML + CSS + JavaScript, 한 파일) |
-| `back3.png` | 첫 화면(마법학교 입구) 배경 |
 | `c1.png` | 숲의 요정 캐릭터 |
-| `Code.gs` | 구글 시트 기록용 Apps Script |
 
-세 파일(`index.html`, `back3.png`, `c1.png`)은 **같은 폴더**에 있어야 합니다.
+두 파일(`index.html`, `c1.png`)은 **같은 폴더**에 있어야 합니다.
 인터넷 연결이 필요합니다 (Tailwind, Three.js, KaTeX, Lucide를 CDN에서 불러옴).
 
 ## 실행
-- `index.html`을 크롬/엣지에서 열면 바로 동작합니다.
+- `index.html`을 크롬/엣지에서 열면 로그인 없이 바로 메인 로비가 열립니다.
 - 학생들에게 배포하려면 폴더째 GitHub Pages, Netlify 등 정적 호스팅에 올리세요.
 
-## 구글 시트 연동
-1. 새 구글 스프레드시트 → **확장 프로그램 > Apps Script**
-2. `Code.gs` 내용을 붙여넣고 저장
-3. **배포 > 새 배포 > 웹 앱** (실행: 나 / 액세스: 모든 사용자) → URL 복사
-4. `index.html`에서 아래 줄을 찾아 URL로 바꾸기
-   ```js
-   const GOOGLE_SHEET_API_URL = "YOUR_APPS_SCRIPT_URL_HERE";
-   ```
-5. 전송 시점: 로그인, 문제 제출(정답/오답), 칭찬도장 획득
-   - 전송 필드: `school`(학교 이름), `studentId`, `solvedCount`, `correctCount`, `acorns`, `stamps`, `timestamp` (+ `event`, `unit`, `questionId`)
-   - 시트 `학습로그`(전체 기록)와 `학생현황`(학교+학번별 최신 누적)이 자동으로 만들어집니다.
-
-URL을 설정하지 않아도 앱은 정상 동작하며, 기록은 브라우저(localStorage)에 학번별로 저장됩니다.
+## 학습 기록 저장
+학습 기록(도토리, 칭찬도장, 푼 문제)은 브라우저(localStorage)에 저장되어, 같은 기기·같은 브라우저에서 다시 열면 이어서 진행됩니다.
+상단 오른쪽의 **기록 초기화**(↺) 버튼을 누르면 확인 창이 뜨고, 확인하면 모든 기록을 지우고 처음부터 다시 시작합니다.
 
 ## 학습 구성
 - **평면도형의 숲 (20문항)**: 다각형(10) · 원과 부채꼴(10)
